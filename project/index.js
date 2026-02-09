@@ -1,15 +1,17 @@
 
+
 const flexContainer = document.getElementById('flexContainer');
 const searchInput = document.querySelector('.searc-inp');
 const searchBtn = document.querySelector('.btnoz');
 const dropdownItems = document.querySelectorAll('.dropdown-item');
+const dropdownBtn = document.getElementById('dropdownMenuButton');
 
 let allCountries = []; 
 
-
 async function getCountries() {
     try {
-        const apiUrl = 'https://restcountries.com/v3.1/all?fields=name,flags,region,population,capital,currencies';
+       
+        const apiUrl = 'https://restcountries.com/v3.1/all?fields=name,flags,region,population,capital,currencies,latlng';
         const response = await fetch(apiUrl);
         
         if (!response.ok) {
@@ -28,7 +30,6 @@ async function getCountries() {
     }
 }
 
-
 function renderCountries(data) {
     if (!data || data.length === 0) {
         flexContainer.innerHTML = `<h2 style="color:white; padding: 20px;">Country not found...</h2>`;
@@ -40,14 +41,14 @@ function renderCountries(data) {
         const currencyName = currencyKey ? country.currencies[currencyKey].name : 'N/A';
         const currencySymbol = currencyKey ? country.currencies[currencyKey].symbol : '';
 
-         let borderColor = '#58a6ff'; // Default mavi
-        if (country.region === 'Africa') borderColor = '#2ecc71'; // Yaşıl
-        if (country.region === 'Americas') borderColor = '#f1c40f'; // Sarı
-        if (country.region === 'Asia') borderColor = '#e74c3c'; // Qırmızı
-        if (country.region === 'Europe') borderColor = '#e13ce7'; // pembe
-        if (country.region === 'Europe') borderColor = '#3f3ce7'; // goy
-        if (country.region === 'Oceania') borderColor = '#d6e73c'; // sari
-        if (country.region === 'Antarctic') borderColor = '#e78f3c'; // narinci
+        let borderColor = '#58a6ff'; 
+        if (country.region === 'Africa') borderColor = '#2ecc71'; 
+        if (country.region === 'Americas') borderColor = '#f1c40f'; 
+        if (country.region === 'Asia') borderColor = '#e74c3c'; 
+        if (country.region === 'Europe') borderColor = '#3f3ce7'; 
+        if (country.region === 'Oceania') borderColor = '#d6e73c'; 
+        if (country.region === 'Antarctic') borderColor = '#e78f3c'; 
+
         return `
             <div class="country-card" style="border: 2px solid ${borderColor}; box-shadow: 0 0 10px ${borderColor}44;">
                 <img class="flag" src="${country.flags.png}" alt="${country.name.common}">
@@ -69,7 +70,6 @@ function renderCountries(data) {
     }).join('');
 }
 
-
 searchBtn.addEventListener('click', () => {
     const value = searchInput.value.toLowerCase().trim();
     const filtered = allCountries.filter(c => 
@@ -84,11 +84,14 @@ searchInput.addEventListener('keypress', (e) => {
     }
 });
 
-
 dropdownItems.forEach(item => {
     item.addEventListener('click', (e) => {
         e.preventDefault();
         const region = e.target.innerText;
+        
+        if(dropdownBtn) {
+            dropdownBtn.innerText = region;
+        }
         
         const filtered = region === 'All Regions' 
             ? allCountries 
