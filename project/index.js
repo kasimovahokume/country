@@ -25,7 +25,7 @@ async function getCountries() {
 function showCountries(countries) {
   flexContainer.innerHTML = ""; // div temizlenir
 
-  // --- YENİ: Ölkə tapılmadısa mesaj çıxar ---
+
   if (countries.length === 0) {
     const noResult = document.createElement("h2");
     noResult.innerText = "Axtarışınıza uyğun ölkə tapılmadı";
