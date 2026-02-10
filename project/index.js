@@ -1,104 +1,139 @@
+const flexContainer = document.querySelector("#flexContainer");
+const searcInp = document.querySelector(".searc-inp");
+const searchBtn = document.querySelector(".btnoz");
+const dropdownItems = document.querySelectorAll(".dropdown-item");
+const dropdownMenuButton = document.querySelector("#dropdownMenuButton");
 
+let allCountries = []; // API-dən gələn ölkələri saxlayacağıq
 
-const flexContainer = document.getElementById('flexContainer');
-const searchInput = document.querySelector('.searc-inp');
-const searchBtn = document.querySelector('.btnoz');
-const dropdownItems = document.querySelectorAll('.dropdown-item');
-const dropdownBtn = document.getElementById('dropdownMenuButton');
-
-let allCountries = []; 
-
+// API-dən ölkələri gətirən funksiya
 async function getCountries() {
-    try {
-       
-        const apiUrl = 'https://restcountries.com/v3.1/all?fields=name,flags,region,population,capital,currencies,latlng';
-        const response = await fetch(apiUrl);
-        
-        if (!response.ok) {
-            throw new Error(`API xətası: ${response.status}`);
-        }
-
-        const countries = await response.json();
-
-        if (Array.isArray(countries)) {
-            allCountries = countries;
-            renderCountries(allCountries);
-        }
-    } catch (error) {
-        flexContainer.innerHTML = `<h2 style="color:white; padding: 20px;">Xəta: ${error.message}</h2>`;
-        console.error("Xəta baş verdi:", error);
-    }
-}
-
-function renderCountries(data) {
-    if (!data || data.length === 0) {
-        flexContainer.innerHTML = `<h2 style="color:white; padding: 20px;">Country not found...</h2>`;
-        return;
-    }
-
-    flexContainer.innerHTML = data.map(country => {
-        const currencyKey = country.currencies ? Object.keys(country.currencies)[0] : null;
-        const currencyName = currencyKey ? country.currencies[currencyKey].name : 'N/A';
-        const currencySymbol = currencyKey ? country.currencies[currencyKey].symbol : '';
-
-        let borderColor = '#58a6ff'; 
-        if (country.region === 'Africa') borderColor = '#2ecc71'; 
-        if (country.region === 'Americas') borderColor = '#f1c40f'; 
-        if (country.region === 'Asia') borderColor = '#e74c3c'; 
-        if (country.region === 'Europe') borderColor = '#3f3ce7'; 
-        if (country.region === 'Oceania') borderColor = '#d6e73c'; 
-        if (country.region === 'Antarctic') borderColor = '#e78f3c'; 
-
-        return `
-            <div class="country-card" style="border: 2px solid ${borderColor}; box-shadow: 0 0 10px ${borderColor}44;">
-                <img class="flag" src="${country.flags.png}" alt="${country.name.common}">
-                <div class="info">
-                    <h3>${country.name.common}</h3>
-                    <p><span class="spaninfo">Region:</span> ${country.region}</p>
-                    <p><span class="spaninfo">Population:</span> ${(country.population / 1000000).toFixed(1)}M</p>
-                    
-                    <div class="currency-box" style="background: rgba(255,255,255,0.05); padding: 8px; border-radius: 8px; margin: 10px 0; border: 1px solid #444;">
-                        <small style="color: #888; font-size: 10px; display: block;">CURRENCY</small>
-                        <div style="color: ${borderColor}; font-weight: bold;">${currencyKey ? currencyKey : 'N/A'} (${currencySymbol})</div>
-                        <div style="font-size: 11px; color: #666;">${currencyName}</div>
-                    </div>
-
-                    <p><span class="spaninfo">Capital:</span> ${country.capital ? country.capital[0] : 'N/A'}</p>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-searchBtn.addEventListener('click', () => {
-    const value = searchInput.value.toLowerCase().trim();
-    const filtered = allCountries.filter(c => 
-        c.name.common.toLowerCase().includes(value)
+  try {
+    const response = await fetch(
+      "https://restcountries.com/v3.1/all?fields=name,flags,region,population,capital",
     );
-    renderCountries(filtered);
-});
+    const countries = await response.json();
+    allCountries = countries; 
+    showCountries(allCountries); // ilk dəfə bütün ölkələri göstər
+  } catch (err) {
+    flexContainer.innerHTML = "<h2 style='color:white;'>Məlumat yüklənərkən xəta baş verdi.</h2>";
+    console.error(err);
+  }
+}
 
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        searchBtn.click();
+// Ölkələri ekrana çıxaran funksiya
+function showCountries(countries) {
+  flexContainer.innerHTML = ""; // div temizlenir
+
+  // --- YENİ: Ölkə tapılmadısa mesaj çıxar ---
+  if (countries.length === 0) {
+    const noResult = document.createElement("h2");
+    noResult.innerText = "Axtarışınıza uyğun ölkə tapılmadı";
+    noResult.style.color = "white";
+    noResult.style.padding = "20px";
+    noResult.style.textAlign = "center";
+    // noResult.style.width = "100%";
+    flexContainer.appendChild(noResult);
+    return; 
+  }
+
+  for (let i = 0; i < countries.length; i++) {
+    const country = countries[i];
+
+    const card = document.createElement("div");
+    card.className = "country-card";
+
+    // Bayraq hissəsi
+    const flag = document.createElement("img");
+    flag.className = "flag";
+
+    if (country.flags && country.flags.png) {
+      flag.src = country.flags.png;
+      flag.alt = country.name.common;
+      card.appendChild(flag);
+    } else {
+      const noFlag = document.createElement("p");
+      noFlag.innerText = "Bayraq yoxdur";
+      noFlag.style.color = "white";
+      noFlag.style.padding = "10px";
+      card.appendChild(noFlag);
     }
+
+    // Ölkə adı
+    const title = document.createElement("h3");
+    title.innerText = country.name.common;
+    title.style.color = "white";
+    title.style.padding = "10px";
+
+    // Region
+    const region = document.createElement("p");
+    region.innerHTML = "<span class='spaninfo'>Region:</span> " + country.region;
+    region.style.color = "white";
+    region.style.paddingLeft = "10px";
+
+    // Population
+    const population = document.createElement("p");
+    population.innerHTML =
+      "<span class='spaninfo'>Population:</span> " +
+      ((country.population / 1000000).toFixed(1) + "M");
+    population.style.color = "white";
+    population.style.paddingLeft = "10px";
+
+    // Capital
+    const capital = document.createElement("p");
+    capital.innerHTML =
+      "<span class='spaninfo'>Capital:</span> " +
+      (country.capital && country.capital.length > 0 ? country.capital[0] : "Paytaxt yoxdur");
+    capital.style.color = "white";
+    capital.style.paddingLeft = "10px";
+
+    // Karta əlavə et
+    card.appendChild(title);
+    card.appendChild(region);
+    card.appendChild(population);
+    card.appendChild(capital);
+
+    // Ekrana əlavə et
+    flexContainer.appendChild(card);
+  }
+}
+
+// Search funksionallığı
+searchBtn.addEventListener("click", () => {
+  const value = searcInp.value.toLowerCase().trim();
+  
+  if (value === "") {
+    showCountries(allCountries);
+    return;
+  }
+
+  const filtered = allCountries.filter((c) =>
+    c.name.common.toLowerCase().includes(value),
+  );
+  
+  showCountries(filtered);
+  
+  // Axtarışdan sonra inputu təmizləyirik
+  searcInp.value = "";
 });
 
-dropdownItems.forEach(item => {
-    item.addEventListener('click', (e) => {
-        e.preventDefault();
-        const region = e.target.innerText;
-        
-        if(dropdownBtn) {
-            dropdownBtn.innerText = region;
-        }
-        
-        const filtered = region === 'All Regions' 
-            ? allCountries 
-            : allCountries.filter(c => c.region === region);
-            
-        renderCountries(filtered);
-    });
+// Enter düyməsi ilə axtarış
+searcInp.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") searchBtn.click();
+});
+
+// Region filter
+dropdownItems.forEach((item) => {
+  item.addEventListener("click", (e) => {
+    const region = e.target.innerText;
+    dropdownMenuButton.innerText = region;
+
+    const filtered =
+      region === "All Regions"
+        ? allCountries
+        : allCountries.filter((c) => c.region === region);
+    showCountries(filtered);
+  });
 });
 
 getCountries();

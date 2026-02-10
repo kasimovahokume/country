@@ -43,7 +43,7 @@ body {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
-.flex-container {
+#flexContainer {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
